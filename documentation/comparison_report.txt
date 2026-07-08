@@ -1,0 +1,39 @@
+============================================================
+SAM vs Florence Label Comparison Report
+============================================================
+
+Summary:
+  SAM labeled images: 1000
+  Florence labeled images: 1000
+  Common images: 1000
+  SAM total detections: 3792
+  Florence total detections: 3501
+
+Agreement Metrics:
+  Total matches: 2796
+  Only in SAM: 996
+  Only in Florence: 705
+  Agreement rate: 62.17%
+  Average IoU (matched): 0.8679
+
+Per-Class Statistics:
+  SAM:
+    Person: 3272
+    Vehicle: 520
+  Florence:
+    Person: 2805
+    Vehicle: 696
+
+Top 10 Disagreement Images:
+  1312227131: SAM=0, Florence=2, Matches=0, Score=1.00
+  108899015: SAM=0, Florence=1, Matches=0, Score=1.00
+  1248357227: SAM=0, Florence=2, Matches=0, Score=1.00
+  1176580356: SAM=0, Florence=2, Matches=0, Score=1.00
+  1164131282: SAM=0, Florence=2, Matches=0, Score=1.00
+  100444898: SAM=0, Florence=1, Matches=0, Score=1.00
+  1067180831: SAM=0, Florence=2, Matches=0, Score=1.00
+  1022975728: SAM=0, Florence=2, Matches=0, Score=1.00
+  1030985833: SAM=0, Florence=2, Matches=0, Score=1.00
+  12238723: SAM=0, Florence=1, Matches=0, Score=1.00
+
+============================================================

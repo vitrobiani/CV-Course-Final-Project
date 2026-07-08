@@ -1,0 +1,24 @@
+# Core dependencies
+torch>=2.0.0
+torchvision>=0.15.0
+numpy>=1.24.0
+pillow>=10.0.0
+tqdm>=4.65.0
+pyyaml>=6.0
+
+# SAM 3 (via Ultralytics)
+ultralytics>=8.3.237
+
+# Florence-2
+transformers>=4.40.0
+timm>=0.9.0
+einops>=0.7.0
+accelerate>=0.25.0
+
+# Evaluation and visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+opencv-python>=4.8.0
+
+# Note: For NixOS, use nix-shell or nix develop instead of pip install -r requirements.txt
+# The shell.nix will install PyTorch with CUDA 12.4 support automatically

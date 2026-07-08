@@ -1,0 +1,9 @@
+
+path: /home/vitrobiani/Documents/afeka/CV/final_project/outputs/sanity_check_sam/sanity_check_dataset
+train: train/images
+val: val/images
+
+nc: 2
+names:
+  0: person
+  1: vehicle
