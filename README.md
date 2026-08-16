@@ -1,10 +1,12 @@
 # CV Final Project: Semi-Supervised Auto-Labeling and Edge-Deployable Model Training
 Students: 
-- Omer Moshe Attia - 211398680
-- Gavriel Levit - 207612417
+- Omer Moshe Attia 
+- Gavriel Levit
 
 **TL;DR:** Filtered Flickr30k by captions (31K → 10K images with persons/vehicles), auto-labeled with SAM3, validated labels with TTA, then trained edge-deployable detectors.\
 **Detector candidates trained:** YOLO26n, YOLO26s, MobileNetV4, RetinaNet 
+
+> edgecv directory contains the functions and service implementation for the edge device (in our case an RPI02W). Images at the end of the readme showing the edge device.
 
 ### Quick Demo
 ```bash
@@ -37,9 +39,12 @@ python scripts/demo.py --image photo.jpg --model retinanet
 
 The dataset-creation pipeline first filters Flickr30k by captions to select ~10,000 images likely to contain persons or vehicles. These filtered images are then run through auto-labelers SAM 3 and Florence-2, and the outputs are validated against each other. Furthermore, SAM and Florence are required to label some already labeled images and they will be checked against this ground truth. Another way we checked the auto labelers is TTA where we used augmentations to calculate the confidence we should have in the label and filtering out noise and inconsistent labels. Lastly, we did a sanity check where we saw if training a model on a small subset with many epochs will overfit (checking the data is learnable)
 
+<details>
+<summary>Phase 1 diagram</summary>
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         AUTO-LABELING PIPELINE (Phase 1)                     │
+│                         AUTO-LABELING PIPELINE (Phase 1)                    │
 └─────────────────────────────────────────────────────────────────────────────┘
 
      ┌─────────────────┐              ┌─────────────────┐
@@ -63,7 +68,7 @@ The dataset-creation pipeline first filters Flickr30k by captions to select ~10,
               │                                │
               ▼                                ▼
      ┌─────────────────────────────────────────────────────┐
-     │              AUTO-LABELING MODELS                    │
+     │              AUTO-LABELING MODELS                   │
      │  ┌───────────────┐      ┌───────────────────┐       │
      │  │    SAM 3      │      │   Florence-2      │       │
      │  │  (Ultralytics)│      │   (HuggingFace)   │       │
@@ -75,14 +80,14 @@ The dataset-creation pipeline first filters Flickr30k by captions to select ~10,
                 │                        │
                 ▼                        ▼
      ┌─────────────────────────────────────────────────────┐
-     │              EVALUATION & COMPARISON                 │
-     │                                                      │
+     │              EVALUATION & COMPARISON                │
+     │                                                     │
      │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
      │  │ Cross-Model │  │Ground Truth │  │   Sanity    │  │
      │  │ Comparison  │  │ Evaluation  │  │   Check     │  │
      │  │   (IoU)     │  │   (mAP)     │  │  Training   │  │
      │  └─────────────┘  └─────────────┘  └─────────────┘  │
-     │                                                      │
+     │                                                     │
      │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
      │  │   Manual    │  │  Ensemble   │  │     TTA     │  │
      │  │ Inspection  │  │    (WBF)    │  │ Consistency │  │
@@ -91,13 +96,15 @@ The dataset-creation pipeline first filters Flickr30k by captions to select ~10,
                             │
                             ▼
      ┌─────────────────────────────────────────────────────┐
-     │              FINAL DATASET (SAM 3)                   │
-     │                                                      │
-     │        9,380 labeled images (YOLO format)            │
-     │        44,274 total detections                       │
-     │        Person: 36,214  |  Vehicle: 8,060             │
+     │              FINAL DATASET (SAM 3)                  │
+     │                                                     │
+     │        9,380 labeled images (YOLO format)           │
+     │        44,274 total detections                      │
+     │        Person: 36,214  |  Vehicle: 8,060            │
      └─────────────────────────────────────────────────────┘
 ```
+
+</details>
 
 ---
 
@@ -132,6 +139,9 @@ This reduced 31,000 images to ~10,000 relevant candidates before auto-labeling.
 
 ---
 
+<details>
+<summary>Decisions and Rationale for hyper parameters</summary>
+
 ### Decisions and Rationale for hyper parameters
 
 | Parameter | Value | Rationale                                                                                                                                                                                        |
@@ -141,6 +151,8 @@ This reduced 31,000 images to ~10,000 relevant candidates before auto-labeling.
 | **Max box size** | 95% of image area | Boxes covering the entire image are probably false positives. 95% lets a legitimate close-up portrait through but blocks out any full screen hallucinations.                                     |
 | **NMS IoU** | 0.50 | Industry-standard. Anything lower drops legitimately overlapping objects (a group of people standing close) and anything higher leaves duplicates from multiple overlapping detections.          |
 | **Image size** | Original | Detection prompts would work better at native resolution. small people could be lost in crowded scenes and get washed out under aggressive downscaling. |
+
+</details>
 
 ---
 
@@ -155,6 +167,9 @@ The auto-labeler was selected by running the candidates through five complementa
 - **TTA validation** - Test-Time Augmentation consistency check: run each labeler on flipped versions of images and verify detections are stable across augmentations.
 
 ---
+
+<details>
+<summary>Cross-model agreement</summary>
 
 ### SAM vs Florence - Detection Counts on Flickr30k (1,000 images)
 
@@ -177,7 +192,12 @@ The auto-labeler was selected by running the candidates through five complementa
 We can see the models agree mostly (2,796 matched detections with IoU > 0.5).
 SAM is more conservative compared to Florence.
 
+</details>
+
 ---
+
+<details>
+<summary>Ground-truth</summary>
 
 ### Ground Truth Evaluation
 
@@ -196,7 +216,12 @@ Both auto-labelers were run on the Roboflow Persons & Cars dataset (2,057 human-
 
 The absolute numbers are low for both models but The relative comparison is the meaningful signal: SAM wins on precision, F1, mAP, and false-positive rate; Florence edges SAM only on recall by a small margin.
 
+</details>
+
 ---
+
+<details>
+<summary>Sanity-Check</summary>
 
 ### Sanity-Check Training
 
@@ -216,13 +241,24 @@ A YOLO26n model was trained for 50 epochs on a 50-image subset from each candida
 Naively we could give a point to florence here, but we know from previous tests that florence has a ton a false positives and is not accurate as we can see in the ensemble's higher percision and low val loss - when we take the agreement between the models and filter florence's hallucinations we reach much better results.\
 So a dataset created from florence would be a bit more learnable - but will learn all the wrong things.
 
+</details>
+<summary>Sanity-Check</summary>
+
 ---
+
+<details>
+<summary>Manual Inspection</summary>
 
 ### Manual Visual Inspection
 
 Visualisations were generated for both labelers (`scripts/visualize_labels.py --view all`) and a sample of disagreement images was inspected by hand. SAM behaved conservatively - fewer detections overall, with occasional misses, but a very low rate of clearly wrong labels. Florence behaved aggressively - way more detections in total, but with a consistent pattern of misidentifying random objects as vehicles, The manual review confirms what the precision and false-positive numbers already suggested: Florence's extra detections come at the cost of label quality. SAM occasionally misses objects, but the detections it does produce are more reliable.
 
+</details>
+
 ---
+
+<details>
+<summary>TTA</summary>
 
 ### TTA - Validating Annotations
 
@@ -248,6 +284,13 @@ TTA validation was performed on a representative sample of 200 images per model.
 
 SAM's detections are highly stable across augmentations - 97.2% of boxes were detected consistently in multiple views, with zero images flagged as low-consistency. Florence showed slightly lower stability (94.8%) with 3 images where less than half of detections were reproducible across augmentations.
 
+</details>
+
+---
+
+<details>
+<summary>Ensemble Validation</summary>
+
 ### Ensemble Validation
 
 Ensemble validation runs multiple *different* detection models on the same image and treats agreement between them as a proxy for correctness. The motivation is that a single model's failure modes are systematic - Florence's tendency to invent vehicles, for example, will not be reproduced by an independently trained model like SAM. If two architecturally different models both place a box of the same class at the same location, the probability that both made the same wrong guess by coincidence is much lower than the probability that an object actually exists there.
@@ -267,6 +310,8 @@ The agreement statistics from our SAM + Florence ensemble:
 | Low-agreement images (<30%) | 139 |
 
 The ensemble achieved the highest sanity-check metrics of all label sources (mAP@0.5 = 42.6%, precision = 81.1%, lowest validation loss). Despite that, **we report it for completeness only**: the assignment requires selecting a single auto-labeler (SAM 3 or Florence-2), so the ensemble is not the deliverable label source.
+
+</details>
 
 ---
 
@@ -335,6 +380,10 @@ We trained three architectures:
 - Faster R-CNN: two-stage, heavier, no accuracy advantage for two classes
 - EfficientDet: requires third framework for marginal gain
 
+
+<details>
+<summary>Training Configuration</summary>
+
 ### Training Configuration
 
 | | YOLO26n       | RetinaNet     | MobileNetV4         |
@@ -374,6 +423,8 @@ Augmentations: mosaic, horizontal flip, HSV jitter, scale jitter.
 
 The 4.5:1 class imbalance shows - vehicle detection is weaker. RetinaNet's Focal Loss significantly improved recall (75.9% vs YOLO's 59.7%), confirming it handles imbalanced data better.
 
+</details>
+
 ### Training Insights
 
 1. **Augmentation works.** YOLO26n gained +6.7% mAP@0.5 with standard augmentations.
@@ -387,6 +438,7 @@ The 4.5:1 class imbalance shows - vehicle detection is weaker. RetinaNet's Focal
 ### Final Models
 
 **YOLO26n** - exported to TFLite for RPi Zero 2W.
+
 ```
 best_models/yolo26n_augmentated.tflite
 ```
@@ -404,6 +456,9 @@ best_models/mobilenetv4_best.pt
 ---
 
 ## Scripts Reference
+
+<details>
+<summary>References</summary>
 
 ```bash
 # Step 1: Filter Flickr30k by captions (select images with persons/vehicles)
@@ -444,7 +499,19 @@ yolo export model=path/to/best.pt format=tflite imgsz=640
 yolo predict model=path/to/best.pt source=path/to/image.jpg
 ```
 
+<details>
+
 # Appendix
+
+> edgecv home screen
+![edgecv_home_screen.jpg](grphics/EdgeCV_Images/edgecv_home_screen.jpg)
+
+> edgecv car detected
+![edgecv_car_detect.jpg](grphics/EdgeCV_Images/edgecv_car_detect.jpg)
+
+> edgecv scooter detected
+![edgecv_scooter_detect.jpg](grphics/EdgeCV_Images/scooter_detect.gif)
+
 > mobilenetv4 results
 ![mobilenet_results.png](grphics/mobilenet_results.png)
 

@@ -1,0 +1,21 @@
+sudo tee /etc/systemd/system/edgecv.service >/dev/null <<EOF
+[Unit]
+Description=Edge CV demo
+After=multi-user.target
+Wants=dev-fb1.device
+After=dev-fb1.device
+
+[Service]
+User=$USER
+WorkingDirectory=$HOME/edgecv
+ExecStartPre=/bin/sh -c 'until [ -e /dev/fb1 ]; do sleep 0.5; done'
+ExecStart=/usr/bin/python3 $HOME/edgecv/app.py
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now edgecv.service

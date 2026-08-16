@@ -1,0 +1,34 @@
+
+--- 2026-06-30 16:31:47 ---
+=== Calibration Result ===
+
+TOUCH_SWAP_XY  = True
+TOUCH_INVERT_X = False
+TOUCH_INVERT_Y = True
+
+absinfo X: 0..319
+absinfo Y: 0..479
+
+Tap taps:
+  top-left: raw=(12, 190)
+  top-right: raw=(5, 204)
+  bottom-left: raw=(8, 464)
+
+Copy the 3 lines above into config.py
+
+--- 2026-06-30 16:32:42 ---
+=== Calibration Result ===
+
+TOUCH_SWAP_XY  = False
+TOUCH_INVERT_X = False
+TOUCH_INVERT_Y = True
+
+absinfo X: 0..319
+absinfo Y: 0..479
+
+Tap taps:
+  top-left: raw=(32, 212)
+  top-right: raw=(440, 186)
+  bottom-left: raw=(451, 185)
+
+Copy the 3 lines above into config.py
