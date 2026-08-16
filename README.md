@@ -242,7 +242,6 @@ Naively we could give a point to florence here, but we know from previous tests 
 So a dataset created from florence would be a bit more learnable - but will learn all the wrong things.
 
 </details>
-<summary>Sanity-Check</summary>
 
 ---
 
@@ -381,10 +380,11 @@ We trained three architectures:
 - EfficientDet: requires third framework for marginal gain
 
 
-<details>
-<summary>Training Configuration</summary>
+### Training Configuration and Results
 
-### Training Configuration
+<details>
+<summary>details</summary>
+
 
 | | YOLO26n       | RetinaNet     | MobileNetV4         |
 |---|---------------|---------------|---------------------|
@@ -499,7 +499,7 @@ yolo export model=path/to/best.pt format=tflite imgsz=640
 yolo predict model=path/to/best.pt source=path/to/image.jpg
 ```
 
-<details>
+</details>
 
 # Appendix
 
